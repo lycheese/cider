@@ -71,10 +71,28 @@ You can add new REPLs to the current session with:
 
 A very common use-case would be to run `cider-jack-in-clj` for some project and then follow up with `cider-connect-sibling-cljs`.
 
-NOTE: Unless there are both Clojure and ClojureScript REPLs in the same session smart-dispatch commands (e.g. evaluate the code
-in the right Clojure/ClojureScript REPL, toggle between Clojure and ClojureScript REPL) won't work. A very common problem
-newcomers experience is to create a Clojure REPL and a ClojureScript REPL in separate sessions and wonder why those are not
+[NOTE]
+====
+Unless there are both Clojure and ClojureScript REPLs in the same
+session smart-dispatch commands (e.g. evaluate the code in the right
+Clojure/ClojureScript REPL, toggle between Clojure and ClojureScript REPL) won't
+work. A very common problem newcomers experience is to create a Clojure REPL and
+a ClojureScript REPL in separate sessions and wonder why those are not
 interacting properly with one another.
+
+In the case of using separate config files for the clj and cljs dependencies
+(e.g. clj dependencies in `deps.edn` and cljs dependencies in `shadow-cljs.edn`)
+it is currently impossible to group those two repls in the same session.
+However, this can be worked around by setting
+`cider-combine-sesman-sessions-per-project` to a non-nil value. This has the
+effect of dispatching to all relevant repls (i.e. all clj repls for a `.clj`
+buffer) instead of just those associated with the current session. It is
+recommended to set this as needed on a per-project basis in `.dir-locals.el`.
+
+The downside of `cider-combine-sesman-sessions-per-project` is that dispatching
+to separate local and remote sessions is no longer possible since all
+project-associated sessions essentially become a single big session.
+====
 
 === Session Life-Cycle Management
 

@@ -61,6 +61,13 @@ available) and the matching REPL buffer."
   :safe #'booleanp
   :package-version '(cider . "0.9.0"))
 
+;;;###autoload
+(defcustom cider-combine-sesman-sessions-per-project nil
+  "Whether to treat all sesman sessions associated with a project as one session."
+  :type 'boolean
+  :group 'cider
+  :safe #'booleanp)
+
 (defconst cider-required-nrepl-version "0.6.0"
   "The minimum nREPL version that's known to work properly with CIDER.")
 
@@ -867,18 +874,28 @@ no linked session or there is no REPL of TYPE within the current session."
 If TYPE is nil or multi, return all REPLs.  If TYPE is a list of types,
 return only REPLs of type contained in the list.  If ENSURE is non-nil,
 throw an error if no linked session exists."
-  (let ((type (cond
-               ((listp type)
-                (mapcar #'cider-maybe-intern type))
-               ((cider-maybe-intern type))))
-        (repls (cdr (if ensure
-                        (sesman-ensure-session 'CIDER)
-                      (sesman-current-session 'CIDER)))))
-    (or (seq-filter (lambda (b)
-                      (cider--match-repl-type type b))
-                    repls)
-        (when ensure
-          (cider--no-repls-user-error type)))))
+  (cl-flet ((extract-connections (sessions)
+                                 (cl-reduce (lambda (x y)
+                                              (append x (cdr y)))
+                                            sessions
+                                            :initial-value '())))
+    (let ((type (cond
+                 ((listp type)
+                  (mapcar #'cider-maybe-intern type))
+                 ((cider-maybe-intern type))))
+          (repls (if cider-combine-sesman-sessions-per-project
+                     (if ensure
+                         (or (extract-connections (sesman-current-sessions 'CIDER))
+                             (user-error "No linked %s sessions" 'CIDER))
+                       (extract-connections (sesman-current-sessions 'CIDER)))
+                   (cdr (if ensure
+                            (sesman-ensure-session 'CIDER)
+                          (sesman-current-session 'CIDER))))))
+      (or (seq-filter (lambda (b)
+                        (cider--match-repl-type type b))
+                      repls)
+          (when ensure
+            (cider--no-repls-user-error type))))))
 
 (defun cider-map-repls (which function)
   "Call FUNCTION once for each appropriate REPL as indicated by WHICH.

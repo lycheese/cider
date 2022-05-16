@@ -6,6 +6,8 @@
 
 * [#3195](https://github.com/clojure-emacs/cider/issues/3195): Revert the change that resulted in `(error "Cyclic keymap inheritance")` on `cider-test-run-test`.
 
+* [#2946](https://github.com/clojure-emacs/cider/issues/2946): Add custom var `cider-combine-sesman-sessions-per-project` to allow combining all sesman sessions associated with a project, therefore allowing for jacking-in a clojure-cli clj repl and a shadow-cljs cljs repl with separate dependency management and automatically using the correct repl even though the repls are in different sesman sessions. (CAUTION: If you are using two separate sessions for local and remote development setting this var to `true` will send all evaluated commands to *both* sessions.)
+
 ## 1.4.0 (2022-05-02)
 
 ## New features
